@@ -1,0 +1,131 @@
+<!DOCTYPE HTML>
+<!--
+	Hyperspace by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Minecraft Server Übersicht</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+		<!-- Header -->
+			<header id="header">
+				<nav>
+					<ul>
+					</ul>
+				</nav>
+			</header>
+			<br>
+
+			<!-- Anlagen -->
+			<section id="Anlagen" class="wrapper style3 fade-up">
+				<div class="inner">
+					<h2>Serverstatus:</h2>
+					<div id="StatusUpdater"></div>
+					<div id="container"></div>
+					<div id="Legend"></div>
+				</div>
+				<script src="assets/js/jquery.min.js"></script>
+				<script>
+					$(document).ready(function(){
+						setInterval(Update, 2000);
+						$("#Legend").html(`🟢 Server is Online<br>🟡 Server is Unbekannt<br>🔴 Server ist Offline<br>`);
+						function Update() {
+							var TableHead = `<thead><tr><th>Status</th><th>Server Name</th></th><th>Spieler</th></th><th>IP</th></th></th></th><th>Memory usage</th></th></th><th>CPU usage</th></tr></thead>`
+							var TableString = `<div class="table-wrapper"><table>${TableHead}`
+							var TableEnd = `</table></div>`;
+							var posting = $.get("http://REPLACE_THIS_WITH_BACKEND_IP:REPLACE_THIS_WITH_BACKEND_PORT/api/v1/MinecraftServerScanner", {
+							});
+							posting.done(function(data) {
+								data.ListOn.map(State => {
+									let Spieler = (State.PlayerOn/State.Slots)*100
+									if(Spieler < 80){
+										Spieler = 0
+									}
+									let RAM = ((bytesToSize(State.mem)/State.memMax)*100).toFixed(0);
+									if(RAM > 100){
+										RAM = 100
+									}
+									let CPU = (State.cpu/100)*100
+									if(CPU >= 100){
+										CPU = 100
+									}
+									let TableElement = `<tbody><tr><td>${StatusFarbe(State.Status)}</td><td>${State.ServerName}</td><td><div style="color: ${hsl_col_perc(Spieler, 100, 0)} !important;">${State.PlayerOn}/${State.Slots}</div></td><td>IPv4: ${State.IPv4}:${State.Port}</td><td><div style="color: ${hsl_col_perc(RAM, 100, 0)} !important;">${bytesToSize(State.mem)}/${State.memMax}MB</div></td><td><div style="color: ${hsl_col_perc(CPU, 100, 0)} !important;">${Round2Dec(State.cpu)}/100%</div></td></tr></tbody>`
+									TableString = TableString + TableElement
+								});
+
+								data.ListOff.map(State => {
+									let TableElement = `<tbody><tr><td>${StatusFarbe(State.Status)}</td><td>${State.ServerName}</td><td>-</td><td>IPv4: ${State.IPv4}:${State.Port}</td><td>-</td><td>-</td></tr></tbody>`
+									TableString = TableString + TableElement
+								});
+
+								TableString = TableString + TableEnd
+								
+								$("#StatusUpdater").html(`Von ${data.Online+data.Offline} Servern sind ${data.Online} Online ${data.Offline} Offline<br>Verzögerung ${Date.now()-data.Timestamp}ms<br><br>`);
+								$("#container").html(TableString);
+							});
+
+							posting.fail(function(err) {
+								$("#StatusUpdater").html(`Es konnte kein Update vom Backend geladen werden.`);
+								$("#container").html(`Error!`);
+								$('#StatusUpdater').addClass("highlight");
+								setTimeout(function () {
+									$('#StatusUpdater').removeClass('highlight');
+								}, 2000);
+							});
+						}
+
+						function StatusFarbe(Status){
+							if(Status === "Online"){
+								return "🟢";
+							}else if(Status === "Offline"){
+								return "🔴";
+							}else{
+								return "🟡";
+							}
+						}
+
+						function bytesToSize(bytes) {
+							return Math.round(bytes/(1024*1024));
+						};
+
+						function Round2Dec(num) {
+							let er = Math.round(num * 100) / 100;
+							return er.toFixed(2);
+						};
+
+						function hsl_col_perc(percent, start, end) {
+									var a = percent / 100,
+										b = (end - start) * a,
+											c = b + start;
+
+									// Return a CSS HSL string
+									return 'hsl('+c+', 100%, 50%)';
+								}
+					});
+					</script>
+			</section>
+		<!-- Footer -->
+		<footer id="footer" class="wrapper style1-alt">
+			<div class="inner">
+				<ul class="menu">
+					<li>&copy; Untitled. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li><li>Creator: <a href="https://github.com/BolverBlitz">BolverBlitz</a></li><li>Projekt: <a href="https://github.com/EBG-PW/Endegs-AnlagenMonitor">Github</a></li><li>Impressum und Datenschutz: <a href="http://localhost:7500/lawstuff">Hier</a></li>
+				</ul>
+			</div>
+		</footer>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+	</body>
+</html>

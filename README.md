@@ -13,6 +13,13 @@
  npm run all-win
   ```  
 
+ ### Add new Server
+ Run this script.  
+ NOTE this can´t be used to monitor servers in docker or remote servers!
+ ```json
+ npm run server
+  ```
+
 
 ### Licence of the HTML5 template used
 Hyperspace by HTML5 UP

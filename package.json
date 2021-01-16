@@ -1,5 +1,5 @@
 {
-  "name": "endegs-anlagenmonitor",
+  "name": "Minecraft-ServerMonitoring",
   "version": "1.0.0",
   "description": "",
   "main": "./src/index.js",
@@ -16,7 +16,7 @@
     "url": "git+https://github.com/EBG-PW/Endegs-AnlagenMonitor.git"
   },
   "keywords": [
-    "Endegs"
+    "Minecraft"
   ],
   "author": "BolverBlitz",
   "license": "AGPL-3.0",

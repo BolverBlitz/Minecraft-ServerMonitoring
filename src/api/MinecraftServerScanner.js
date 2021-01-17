@@ -3,6 +3,8 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const fs = require('fs');
 const Joi = require('joi');
+const os = require("os")
+const cpucores = os.cpus().length
 
 const { Rcon } = require('rcon-client')
 const find = require('find-process');
@@ -54,7 +56,7 @@ let getServerStats = function({ IPv4, port, ServerName }) {
                             PlayerOn: list[2],
                             PlayerList: PlayerList,
                             Slots: list[7],
-                            cpu: stats.cpu,
+                            cpu: stats.cpu/cpucores,
                             mem: stats.memory,
                             memMax: memMax,
                             Status: "Online"

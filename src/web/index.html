@@ -36,7 +36,7 @@
 						setInterval(Update, 2000);
 						$("#Legend").html(`🟢 Server is Online<br>🟡 Server is Unbekannt<br>🔴 Server ist Offline<br>`);
 						function Update() {
-							var TableHead = `<thead><tr><th>Status</th><th>Server Name</th></th><th>Spieler</th></th><th>IP</th></th></th></th><th>Memory usage</th></th></th><th>CPU usage</th></tr></thead>`
+							var TableHead = `<thead><tr><th>Status</th><th>Server Name</th></th><th>Spieler</th></th><th>IP</th></th></th></th><th>Memory usage</th></th></th><th>CPU usage</th><th>TPS</th></tr></thead>`
 							var TableString = `<div class="table-wrapper"><table>${TableHead}`
 							var TableEnd = `</table></div>`;
 							var posting = $.get("http://localhost:7500/api/v1/MinecraftServerScanner", {
@@ -55,12 +55,23 @@
 									if(CPU >= 100){
 										CPU = 100
 									}
-									let TableElement = `<tbody><tr><td>${StatusFarbe(State.Status)}</td><td>${State.ServerName}</td><td><div style="color: ${hsl_col_perc(Spieler, 100, 0)} !important;">${State.PlayerOn}/${State.Slots}</div></td><td>IPv4: ${State.IPv4}:${State.Port}</td><td><div style="color: ${hsl_col_perc(RAM, 100, 0)} !important;">${bytesToSize(State.mem)}/${State.memMax}MB</div></td><td><div style="color: ${hsl_col_perc(CPU, 100, 0)} !important;">${Round2Dec(State.cpu)}/100%</div></td></tr></tbody>`
+									if(State.tps === "Vanilla"){
+										var TPSColor = "255, 255, 255, 0.55"
+									}else{
+										let TPSNum = State.tps.replace(".", "")
+										//TPSNum = TPSNum.split("")
+										if(TPSNum.length === 3){
+											TPSNum = `${TPSNum}0`
+										}
+										var TPSColor = hsl_col_perc(Number(TPSNum)/20, 0, 100)
+										console.log(Number(hsl_col_perc(State.tps.replace(".", ""))/2));
+									}
+									let TableElement = `<tbody><tr><td>${StatusFarbe(State.Status)}</td><td>${State.ServerName}</td><td><div style="color: ${hsl_col_perc(Spieler, 100, 0)} !important;">${State.PlayerOn}/${State.Slots}</div></td><td>IPv4: ${State.IPv4}:${State.Port}</td><td><div style="color: ${hsl_col_perc(RAM, 100, 0)} !important;">${bytesToSize(State.mem)}/${State.memMax}MB</div></td><td><div style="color: ${hsl_col_perc(CPU, 100, 0)} !important;">${Round2Dec(State.cpu)}/100%</div></td><td><div style="color: ${TPSColor} !important;">${State.tps}</div></td></tr></tbody>`
 									TableString = TableString + TableElement
 								});
 
 								data.ListOff.map(State => {
-									let TableElement = `<tbody><tr><td>${StatusFarbe(State.Status)}</td><td>${State.ServerName}</td><td>-</td><td>IPv4: ${State.IPv4}:${State.Port}</td><td>-</td><td>-</td></tr></tbody>`
+									let TableElement = `<tbody><tr><td>${StatusFarbe(State.Status)}</td><td>${State.ServerName}</td><td>-</td><td>IPv4: ${State.IPv4}:${State.Port}</td><td>-</td><td>-</td><td>-</td></tr></tbody>`
 									TableString = TableString + TableElement
 								});
 

@@ -23,49 +23,77 @@ const PluginDocs = '';
 //Global Vars
 var HasChanced = true;
 var MinecraftServer;
-var CPUUsage = [];
-var RAMUsage = [];
-var Players = [];
 var StatusListe = [];
+
+function CleanColor(string) {
+  string = string.split("");
+  for (i = 0; i < string.length+1; i++) {
+    if(string[i] === "§"){
+      string.splice(i, 2)
+    }
+  }
+  return string.join("")
+};
 
 let getServerStats = function({ IPv4, port, ServerName }) {
 	return new Promise(function(resolve, reject) {
     try{
         Rcon.connect({host: "localhost", port: port, password: process.env.RCON_Passwort}).then(function(rcon) {
-            rcon.send("list").then(function(list) {
-                list = list.split(" ")
-                var PlayerList = [];
-                for (i = 10; i < list.length; i++) { 
-                  PlayerList.push(list[i].replace(",",""))
-                };
-                find('port', port).then(function (pid) {
-                    pidusage(pid[0].pid, function (err, stats) {
-                        let StartPara = pid[0].cmd.split(" ");
-                        let memMax;
-                        StartPara.map(part => {
-                            if(part.includes("-Xmx")){
-                                memMax = part.substr(4, part.length).split("")
-                                memMax = memMax.slice(0, memMax.length-1).join("")
-                            }
-                        });
+              rcon.send("tps").then(function(tps) {
+                rcon.send("list").then(function(list) {
+                  list = list.split(" ")
+                  if(!tps.includes("Unknown")){
+                    tps = CleanColor(tps).split(" ")
+                    tps = tps[6].replace(",","")
+                  }else{
+                    tps = "Vanilla"
+                  }
+                  var PlayerList = [];
+                  for (i = 10; i < list.length; i++) { 
+                    if(list[i] !== ""){
+                      PlayerList.push(list[i].replace(",",""))
+                    }
+                  };
+                  find('port', port).then(function (pid) {
+                    if(typeof(pid[0].pid) !== "undefined" || typeof(pid[0].cmd) !== "undefined"){
+                      pidusage(pid[0].pid, function (err, stats) {
+                          let StartPara = pid[0].cmd.split(" ");
+                          let memMax;
+                          StartPara.map(part => {
+                              if(part.includes("-Xmx")){
+                                  memMax = part.substr(4, part.length).split("")
+                                  memMax = memMax.slice(0, memMax.length-1).join("")
+                              }
+                          });
 
-                        let ret = {
-                            ServerName: ServerName,
-                            Port: port,
-                            IPv4: IPv4,
-                            PlayerOn: list[2],
-                            PlayerList: PlayerList,
-                            Slots: list[7],
-                            cpu: stats.cpu/cpucores,
-                            mem: stats.memory,
-                            memMax: memMax,
-                            Status: "Online"
-                        }
-                        resolve(ret)
-                    });
-                }).catch(error => console.log(error));
-            }).catch(error => console.log(error));
-            rcon.end()
+                          let ret = {
+                              ServerName: ServerName,
+                              Port: port,
+                              IPv4: IPv4,
+                              tps: tps,
+                              PlayerOn: list[2],
+                              PlayerList: PlayerList,
+                              Slots: list[7],
+                              cpu: stats.cpu/cpucores,
+                              mem: stats.memory,
+                              memMax: memMax,
+                              Status: "Online"
+                          }
+                          resolve(ret)
+                          rcon.end()
+                      });
+                    }else{
+                      let ret = {
+                        ServerName: ServerName,
+                        Port: port,
+                        IPv4: IPv4,
+                        Status: "Offline"
+                    }
+                    resolve(ret)
+                    }
+                  }).catch(error => reject(error));
+              }).catch(error => reject(error));
+            }).catch(error => reject(error));
         }).catch(function (error) {
           if(error.code === "ECONNREFUSED"){
             let ret = {
@@ -126,7 +154,7 @@ function UpdateStatus() {
       ListOff: StatusArrOFF
     }
 
-  });
+  }).catch(error => console.log(error));
 }
 
 UpdateStatus()

@@ -1,5 +1,7 @@
 # Minecraft-ServerMonitoring
  
+![grafik](https://user-images.githubusercontent.com/35345288/115270765-f37b8400-a13c-11eb-9b62-7c909a7d8dd3.png)
+
  ### Installation
  clone this repo  
  Make sure nodeJS 12.x and NPM is installed!  
